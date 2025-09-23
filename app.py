@@ -32,7 +32,94 @@ df_daily = load_daily_sales_report()
 entity_counts = load_entity_counts()
 
 
-# --- FUNÇÕES DE RELATÓRIOS INDIVIDUAIS (sem alterações) ---
+# --- FUNÇÃO PARA GERAR O PDF (RESTAURADA) ---
+def generate_pdf_report(df_trans, df_cash, df_device, df_daily, entity_counts):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 24)
+    pdf.cell(0, 20, "Relatório Consolidado - Rede Recarga", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 10, f"Gerado em: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M:%S')}", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="C")
+    
+    def add_chart_to_pdf(fig, title):
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 16)
+        pdf.cell(0, 10, title, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+        img_bytes = fig.to_image(format="png", width=800, height=450, scale=2)
+        pdf.image(io.BytesIO(img_bytes), x=10, y=25, w=190)
+
+    # Relatórios Financeiros
+    last_month_period = df_trans['transaction_date'].dt.to_period('M').max()
+    df_filtered_trans = df_trans[df_trans['transaction_date'].dt.to_period('M') == last_month_period].copy()
+    faturamento_atual = df_filtered_trans['paid_value'].sum()
+    ticket_medio = df_filtered_trans['paid_value'].mean()
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Financeiro: Faturamento Geral", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 10, f"Faturamento Mensal: R$ {faturamento_atual:,.2f}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 10, f"Ticket Médio: R$ {ticket_medio:,.2f}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    payment_revenue = df_filtered_trans.groupby('payment_method')['paid_value'].sum().reset_index()
+    fig_payment = px.pie(payment_revenue, names='payment_method', values='paid_value', hole=0.4, template="plotly_white")
+    add_chart_to_pdf(fig_payment, "Financeiro: Receita por Método de Pagamento")
+
+    fig_cash = px.bar(df_cash, x='status', y='value', color='status', color_discrete_map={'Recebido': 'green', 'Pendente': 'orange', 'Vencido': 'red'}, template="plotly_white")
+    add_chart_to_pdf(fig_cash, "Financeiro: Saúde de Contas a Receber")
+
+    # Relatórios de Vendas
+    last_month_period_device = df_device['transaction_date'].dt.to_period('M').max()
+    df_filtered_device = df_device[df_device['transaction_date'].dt.to_period('M') == last_month_period_device].copy()
+    channel_revenue = df_filtered_device.groupby('device_type')['value'].agg('sum').reset_index()
+    fig_channel = px.bar(channel_revenue, x='device_type', y='value', text_auto='.2s', template="plotly_white")
+    add_chart_to_pdf(fig_channel, "Vendas: Faturamento por Canal")
+    
+    df_filtered_device['hour'] = df_filtered_device['transaction_date'].dt.hour
+    hourly_sales = df_filtered_device.groupby('hour')['value'].sum().reset_index()
+    hourly_sales['hour'] = hourly_sales['hour'].astype(str)
+    fig_hourly = px.bar(hourly_sales, x='hour', y='value', template="plotly_white")
+    add_chart_to_pdf(fig_hourly, "Vendas: Análise de Horários de Pico")
+    
+    # Relatórios Operacionais
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Operacional: Distribuição de Terminais", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+    pdf.set_font("Helvetica", "", 12)
+    pdf.cell(0, 10, f"Total de PDVs: {entity_counts['total_pdv_units']}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 10, f"Terminais POS: {entity_counts['pos_terminal_count']}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 10, f"Terminais Totem: {entity_counts['totem_terminal_count']}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.cell(0, 10, f"Terminais Lista: {entity_counts['list_pos_terminal_count']}", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    
+    last_month_period_daily = df_daily['data'].dt.to_period('M').max()
+    df_daily_filtered = df_daily[df_daily['data'].dt.to_period('M') == last_month_period_daily].copy()
+    pdv_ranking = df_daily_filtered.groupby('pdv')['total'].sum().nlargest(5).reset_index()
+    credenciado_ranking = df_daily_filtered.groupby('credenciado')['total'].sum().nlargest(5).reset_index()
+    
+    pdf.add_page()
+    pdf.set_font("Helvetica", "B", 16)
+    pdf.cell(0, 10, "Operacional: Rankings de Desempenho (Top 5)", new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+    pdf.ln(5)
+    
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 10, "PDVs por Faturamento", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 10)
+    for index, row in pdv_ranking.iterrows():
+        pdf.cell(80, 8, str(row['pdv']), border=1)
+        pdf.cell(40, 8, f"R$ {row['total']:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(10)
+    
+    pdf.set_font("Helvetica", "B", 12)
+    pdf.cell(0, 10, "Credenciados por Faturamento", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_font("Helvetica", "", 10)
+    for index, row in credenciado_ranking.iterrows():
+        pdf.cell(80, 8, str(row['credenciado']), border=1)
+        pdf.cell(40, 8, f"R$ {row['total']:,.2f}", border=1, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    return bytes(pdf.output())
+
+# --- FUNÇÕES DE RELATÓRIOS INDIVIDUAIS ---
 def report_kpi_faturamento(df_trans):
     st.title("💰 Financeiro: Faturamento Geral")
     last_month_period = df_trans['transaction_date'].dt.to_period('M').max()
@@ -116,35 +203,50 @@ if 'current_dashboard_index' not in st.session_state:
     st.session_state.current_dashboard_index = 0
 if 'autorotate' not in st.session_state:
     st.session_state.autorotate = True
+if 'selected_dashboard' not in st.session_state:
+    st.session_state.selected_dashboard = REPORT_NAMES[st.session_state.current_dashboard_index]
 
 # --- BARRA LATERAL COM CONTROLES ---
 st.sidebar.title("Painel de Controle")
 st.sidebar.markdown("Use os controles abaixo para navegar.")
 st.sidebar.toggle("Rotação Automática", key='autorotate')
 st.sidebar.divider()
+
+# --- BOTÃO DE DOWNLOAD RESTAURADO ---
+st.sidebar.subheader("Exportar Relatório")
+if st.sidebar.button("Baixar Relatório em PDF", use_container_width=True):
+    with st.spinner("Gerando PDF, por favor aguarde..."):
+        pdf_data = generate_pdf_report(df_trans, df_cash, df_device, df_daily, entity_counts)
+        st.sidebar.download_button(
+            label="Clique para baixar o PDF",
+            data=pdf_data,
+            file_name=f"relatorio_rede_recarga_{pd.Timestamp.now().strftime('%Y%m%d')}.pdf",
+            mime="application/pdf",
+            use_container_width=True
+        )
+st.sidebar.divider()
+
 st.sidebar.subheader("Navegação Manual")
-
+def handle_navigation(new_index):
+    st.session_state.current_dashboard_index = new_index
+    st.session_state.selected_dashboard = REPORT_NAMES[new_index]
+    st.session_state.autorotate = False
 def handle_next():
-    st.session_state.current_dashboard_index = (st.session_state.current_dashboard_index + 1) % len(REPORTS)
-    st.session_state.autorotate = False
-
+    new_index = (st.session_state.current_dashboard_index + 1) % len(REPORTS)
+    handle_navigation(new_index)
 def handle_previous():
-    st.session_state.current_dashboard_index = (st.session_state.current_dashboard_index - 1 + len(REPORTS)) % len(REPORTS)
-    st.session_state.autorotate = False
-
+    new_index = (st.session_state.current_dashboard_index - 1 + len(REPORTS)) % len(REPORTS)
+    handle_navigation(new_index)
 def handle_select():
-    # A callback agora lê o valor do widget e atualiza o índice
-    st.session_state.current_dashboard_index = REPORT_NAMES.index(st.session_state.selected_dashboard_key)
-    st.session_state.autorotate = False
-
+    new_index = REPORT_NAMES.index(st.session_state.selected_dashboard_key)
+    handle_navigation(new_index)
 st.sidebar.selectbox(
     "Ir para Relatório:",
     options=REPORT_NAMES,
     index=st.session_state.current_dashboard_index,
-    key='selected_dashboard_key', # Usamos uma chave para o widget
+    key='selected_dashboard_key',
     on_change=handle_select
 )
-
 col1, col2 = st.sidebar.columns(2)
 col1.button("◀️ Anterior", on_click=handle_previous, use_container_width=True)
 col2.button("Próximo ▶️", on_click=handle_next, use_container_width=True)
@@ -155,9 +257,7 @@ report_to_display = REPORTS[current_index]
 report_to_display["func"](*report_to_display["args"])
 
 if st.session_state.autorotate:
-    # A rotação automática agora APENAS atualiza o índice.
     st.session_state.current_dashboard_index = (current_index + 1) % len(REPORTS)
-    
     progress_bar = st.progress(0)
     status_text = st.empty()
     for i in range(REFRESH_INTERVAL_SECONDS):
