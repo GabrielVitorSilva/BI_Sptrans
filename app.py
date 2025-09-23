@@ -214,7 +214,7 @@ st.sidebar.divider()
 
 # --- BOTÃO DE DOWNLOAD RESTAURADO ---
 st.sidebar.subheader("Exportar Relatório")
-if st.sidebar.button("Baixar Relatório em PDF", use_container_width=True):
+if st.sidebar.button("Gerar Relatório em PDF", use_container_width=True):
     with st.spinner("Gerando PDF, por favor aguarde..."):
         pdf_data = generate_pdf_report(df_trans, df_cash, df_device, df_daily, entity_counts)
         st.sidebar.download_button(
