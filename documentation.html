@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação do Schema - Relatórios</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-section {
+            scroll-margin-top: 80px;
+        }
+        /* Navegação ativa */
+        .nav-link-active {
+            color: rgb(79 70 229) !important; /* indigo-600 */
+        }
+        /* Botão flutuante voltar ao topo */
+        .back-to-top {
+            position: fixed;
+            right: 1.25rem; /* 5 */
+            bottom: 1.25rem; /* 5 */
+            z-index: 50;
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="flex min-h-screen">
+        <!-- Sidebar de Navegação -->
+        <aside class="w-64 bg-white border-r border-slate-200 p-6 fixed h-full overflow-y-auto hidden md:block">
+            <h1 class="text-xl font-bold text-slate-900 mb-4">Modelos do Schema</h1>
+            <div class="mb-4">
+                <label for="sidebar-search" class="sr-only">Buscar modelo</label>
+                <input id="sidebar-search" type="text" placeholder="Buscar..." class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <nav>
+                <ul class="space-y-2">
+                    <li><a href="#entity-counts" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">EntityCounts</a></li>
+                    <li><a href="#cash-movimentation" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">CashMovimentation</a></li>
+                    <li><a href="#card-payout-summary" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">CardPayoutSummary</a></li>
+                    <li><a href="#phone-payout-summary" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">PhonePayoutSummary</a></li>
+                    <li><a href="#all-transactions-log" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">AllTransactionsLog</a></li>
+                    <li><a href="#all-transactions" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">AllTransactions</a></li>
+                    <li><a href="#daily-card-recharge" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">DailyCardRechargeValues</a></li>
+                    <li><a href="#daily-phone-recharge" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">DailyPhoneRechargeValues</a></li>
+                    <li><a href="#daily-credit-application" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">DailyCreditApplicationValues</a></li>
+                    <li><a href="#daily-sales-report" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">DailySalesReport</a></li>
+                    <li><a href="#device-revenue-log" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">DeviceRevenueLog</a></li>
+                    <li><a href="#hourly-sales-log" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">HourlySalesLog</a></li>
+                    <li><a href="#payment-types" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Tipos de Pagamento (Enum)</a></li>
+                    <li><a href="#recharge-alias" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Aliases de Recarga</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="flex-1 md:ml-64 p-6 md:p-10">
+            <header class="mb-10">
+                <h1 class="text-4xl font-bold text-slate-900">Documentação do Banco de Dados</h1>
+                <p class="text-lg text-slate-500 mt-2">Um guia detalhado dos modelos Prisma que mapeiam as views materializadas de relatórios.</p>
+            </header>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+                <div class="text-sm text-slate-500">Dica: use a barra lateral para navegar e buscar.</div>
+                <div class="flex-1"></div>
+                <div class="flex gap-2">
+                    <button id="expandAll" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Expandir todas</button>
+                    <button id="collapseAll" class="inline-flex items-center rounded-md bg-slate-200 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400">Recolher todas</button>
+                </div>
+            </div>
+
+            <div class="space-y-12">
+                <!-- Seção EntityCounts -->
+                <section id="entity-counts" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">EntityCounts</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_entity_counts</code>. Usada para obter uma contagem consolidada das principais entidades do sistema (Credenciadores, Credenciados, PDVs, Terminais) para exibição em dashboards.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">view_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Chave primária (sempre 1).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">last_updated_at</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da última atualização da view.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">total_creditors</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de credenciadores.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">total_accredited</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de credenciados.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">total_pdv_units</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de PDVs.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pos_terminal_count</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de terminais POS.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">list_pos_terminal_count</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de terminais POS Somente Lista.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">totem_terminal_count</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">Total de terminais Totem.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- Seção CashMovimentation -->
+                <section id="cash-movimentation" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">CashMovimentation</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_recharge_status</code>. Usada para classificar transações em dinheiro (recargas) como Recebido, Pendente ou Vencido, com base no prazo de pagamento do PDV.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID da transação original. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">type</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Tipo da transação (ex: 'Card Recharge'). Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do PDV.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">value</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Float</code></td><td class="px-6 py-4">Valor da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">status</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Status do pagamento (Received, Pending, Overdue).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- Seção CardPayoutSummary -->
+                <section id="card-payout-summary" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">CardPayoutSummary</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_card_payout_summary</code>. Usada para agregar os valores financeiros (taxas, comissões, repasses) especificamente para transações de recarga de cartão.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                             <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da transação. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do PDV. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do credenciado. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">convenience_fee</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Taxa de conveniência total.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">acquisition_rate</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Taxa de adquirência total.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">tax</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Impostos totais.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">creditor_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total do credenciador.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">network_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total da rede.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">payout_sptrans</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Repasse total para SPTrans.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Seção PhonePayoutSummary -->
+                 <section id="phone-payout-summary" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">PhonePayoutSummary</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_phone_payout_summary</code>. Usada para agregar os valores financeiros (taxas, comissões, repasses) especificamente para transações de recarga de celular.</p>
+                    <div class="overflow-x-auto">
+                         <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                             <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da transação. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do PDV. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do credenciado. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">convenience_fee</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Taxa de conveniência total.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">acquisition_rate</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Taxa de adquirência total.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">tax</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Impostos totais.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">creditor_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total do credenciador.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">network_commission</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Comissão total da rede.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">payout_sptrans</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal?</code></td><td class="px-6 py-4">Repasse total.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Seção AllTransactionsLog -->
+                <section id="all-transactions-log" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">AllTransactionsLog</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_all_transactions_log</code>. Usada como base para o cálculo de ticket médio, unificando diferentes tipos de transações em um único log.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">unique_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">ID único da transação (ex: 'card-123'). Chave primária.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_datetime</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Timestamp completo da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">value</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do PDV (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do credenciado (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">product_type</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Tipo de produto (VC, VE, Phone, etc).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- Seção AllTransactions -->
+                <section id="all-transactions" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">AllTransactions</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_all_transactions</code>. Usada para totalizar valores de transações, agrupando por tipo de transação e por método de pagamento (Crédito, Débito, PIX, etc.).</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_type</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Tipo da transação (Card Recharge, etc).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">unique_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">ID único da transação. Chave primária.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Timestamp da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">payment_method</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Método de pagamento (Credit, Debit, PIX, etc).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">paid_value</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor pago.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do PDV (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do credenciado (opcional).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Daily* Sections -->
+                <section id="daily-card-recharge" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">DailyCardRechargeValues</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_daily_card_recharge_values</code>. View base que pré-agrega os valores de recarga de cartão por dia e serial de terminal. É um dos componentes do relatório diário de vendas.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da agregação. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">serial</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Serial do terminal. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do PDV.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int</code></td><td class="px-6 py-4">ID do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">vc_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga VC.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">ve_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga VE.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">vt_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga VT.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">fidelity_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga Fidelidade.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">temporary_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga Temporal.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">list_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para a recarga Lista.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section id="daily-phone-recharge" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">DailyPhoneRechargeValues</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_daily_phone_recharge_values</code>. View base que pré-agrega os valores de recarga de celular por dia e serial de terminal. É um dos componentes do relatório diário de vendas.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da agregação. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">serial</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Serial do terminal. Parte da chave composta.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">phone_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para recargas de celular.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <section id="daily-credit-application" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">DailyCreditApplicationValues</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_daily_credit_application_values</code>. View base que pré-agrega os valores de aplicação de crédito por dia. É um dos componentes do relatório diário de vendas.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da agregação. Chave primária.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">credit_total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor total para aplicações de crédito.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- DailySalesReport -->
+                 <section id="daily-sales-report" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">DailySalesReport</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_daily_sales_report</code>. View final e consolidada que combina múltiplas views base para criar um relatório diário de vendas, enriquecido com dados de operador, PDV e credenciado.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">data</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Data da venda.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">credenciador</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">Nome do credenciador.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">credenciado</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">Nome do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">Descrição do PDV.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdvId</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do PDV.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">credenciadoId</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do credenciado.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">serial</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Serial do terminal ou 'CREDIT_TOTAL'.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">operador</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">Nome do operador do caixa.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">cpfOperador</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">CPF do operador do caixa.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">vc</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga VC.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">ve</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga VE.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">vt</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga VT.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">fidelidade</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga Fidelidade.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">temporal</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga Temporal.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">lista</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga Lista.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">celular</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de recarga de Celular.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">credito</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor de aplicação de Crédito.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">total</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Soma total dos valores da linha.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- DeviceRevenueLog -->
+                <section id="device-revenue-log" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">DeviceRevenueLog</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_device_revenue_log</code>. Usada para analisar a receita por canal de origem (POS, Totem, App, WhatsApp), consolidando diferentes tipos de transações.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">unique_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">ID único da transação. Chave primária.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_date</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Timestamp da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">value</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">device_identifier</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Identificador do dispositivo (serial, user_id, etc).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">device_type</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Tipo do dispositivo/canal (POS, app, wpp, etc).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do PDV (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do credenciado (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">origin_cpf</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String?</code></td><td class="px-6 py-4">CPF de origem para transações digitais.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <!-- HourlySalesLog -->
+                <section id="hourly-sales-log" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">HourlySalesLog</h2>
+                    <p class="text-slate-600 mb-4">Mapeia a view <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">mv_hourly_sales_log</code>. Usada para analisar o volume de vendas hora a hora, unificando os diferentes tipos de transações em um único log para agregação.</p>
+                     <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Campo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">unique_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">ID único da transação. Chave primária.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">transaction_datetime</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DateTime</code></td><td class="px-6 py-4">Timestamp completo da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">value</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Decimal</code></td><td class="px-6 py-4">Valor da transação.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">pdv_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do PDV (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">accredited_id</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">Int?</code></td><td class="px-6 py-4">ID do credenciado (opcional).</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">product_type</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">String</code></td><td class="px-6 py-4">Tipo do produto (VC, VE, Phone, etc).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Tipos de Pagamento (Enum) -->
+                <section id="payment-types" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">Tipos de Pagamento (Enum)</h2>
+                    <p class="text-slate-600 mb-4">Enumeração que define os métodos de pagamento aceitos no sistema, conforme <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">PAYMENTYPE</code>.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Nome</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Código</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">CREDIT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">1</code></td><td class="px-6 py-4">Pagamento via cartão de crédito.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">DEBIT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">2</code></td><td class="px-6 py-4">Pagamento via cartão de débito.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">MONEY</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">3</code></td><td class="px-6 py-4">Pagamento em dinheiro.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">PIX</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">4</code></td><td class="px-6 py-4">Pagamento via PIX.</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">LIST</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">5</code></td><td class="px-6 py-4">Pagamento Somente Lista (restrito).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Aliases de Recarga -->
+                <section id="recharge-alias" class="content-section bg-white p-8 rounded-lg shadow-sm border border-slate-200">
+                    <h2 class="text-2xl font-semibold text-slate-900 mb-1">Aliases de Recarga</h2>
+                    <p class="text-slate-600 mb-6">Mapeamentos auxiliares para produtos/recargas e agrupamentos por códigos. Esta seção documenta os objetos <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">RECHARGE_ALIAS_LABEL</code>, <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">RECHARGE_ALIAS_TYPE</code>, <code class="bg-slate-100 text-slate-700 px-2 py-1 rounded-md text-sm">RECHARGE_ALIAS_CODE</code> e os grupos de códigos relacionados.</p>
+
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">RECHARGE_ALIAS_LABEL</h3>
+                    <div class="overflow-x-auto mb-8">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sigla</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Rótulo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VT</code></td><td class="px-6 py-4">VT</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VE</code></td><td class="px-6 py-4">VE</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VC</code></td><td class="px-6 py-4">VC</td></tr>
+
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M20</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 20 passagens</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">LA</code></td><td class="px-6 py-4">Recarga via Auto-Atendimento</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M8</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 8 passagens</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M50</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 50 passagens</td></tr>
+
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMO</code></td><td class="px-6 py-4">VC Mensal - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDO</code></td><td class="px-6 py-4">VC Diário - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMT</code></td><td class="px-6 py-4">VC Mensal - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDT</code></td><td class="px-6 py-4">VC Diário - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMI</code></td><td class="px-6 py-4">VC Mensal - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDI</code></td><td class="px-6 py-4">VC Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMO</code></td><td class="px-6 py-4">VE Mensal - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDO</code></td><td class="px-6 py-4">VE Diário - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMT</code></td><td class="px-6 py-4">VE Mensal - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDT</code></td><td class="px-6 py-4">VE Diário - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMI</code></td><td class="px-6 py-4">VE Mensal - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDI</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAO</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAT</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAI</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Integrado'</td></tr>
+
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAO</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAT</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAI</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAO</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAT</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAI</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEL</code></td><td class="px-6 py-4">VE Lista</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCL</code></td><td class="px-6 py-4">VC Lista</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMOL</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSOL</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDOL</code></td><td class="px-6 py-4">VT Diário - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMTL</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSTL</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDTL</code></td><td class="px-6 py-4">VT Diário - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMIL</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSIL</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDIL</code></td><td class="px-6 py-4">VT Diário - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMOL</code></td><td class="px-6 py-4">VC Mensal Lista - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSOL</code></td><td class="px-6 py-4">VC Semanal Lista- 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDOL</code></td><td class="px-6 py-4">VC Diário Lista- 'Uso No Ônibus'</td></tr>
+
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMTL</code></td><td class="px-6 py-4">VC Mensal Lista- 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSTL</code></td><td class="px-6 py-4">VC Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDTL</code></td><td class="px-6 py-4">VC Diário - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMIL</code></td><td class="px-6 py-4">VC Mensal Lista- 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSIL</code></td><td class="px-6 py-4">VC Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDIL</code></td><td class="px-6 py-4">VC Diário - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMOL</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESOL</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDOL</code></td><td class="px-6 py-4">VE Diário - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMTL</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESTL</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDTL</code></td><td class="px-6 py-4">VE Diário - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMIL</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESIL</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDIL</code></td><td class="px-6 py-4">VE Diário - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGOL</code></td><td class="px-6 py-4">VE Diário - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGTL</code></td><td class="px-6 py-4">VE Diário - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGIL</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VOL</code></td><td class="px-6 py-4">VE Diário - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VTL</code></td><td class="px-6 py-4">VE Diário - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VIL</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGOL</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGTL</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGIL</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Integrado'</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">RECHARGE_ALIAS_TYPE</h3>
+                    <div class="overflow-x-auto mb-8">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sigla</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Tipo</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VT</code></td><td class="px-6 py-4">VT</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VE</code></td><td class="px-6 py-4">VE</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VC</code></td><td class="px-6 py-4">VC</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">RECHARGE_ALIAS_CODE</h3>
+                    <div class="overflow-x-auto mb-8">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Sigla</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Código</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Descrição</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">3</code></td><td class="px-6 py-4">VT</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VE</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">4</code></td><td class="px-6 py-4">VE</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VC</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">5</code></td><td class="px-6 py-4">VC</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M20</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">6</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 20 passagens</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">LA</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">10</code></td><td class="px-6 py-4">Recarga via Auto-Atendimento</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M8</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">11</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 8 passagens</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">M50</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">12</code></td><td class="px-6 py-4">Fidelidade - Produto Metrô - 50 passagens</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">13</code></td><td class="px-6 py-4">VC Mensal - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">15</code></td><td class="px-6 py-4">VC Diário - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">16</code></td><td class="px-6 py-4">VC Mensal - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">18</code></td><td class="px-6 py-4">VC Diário - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">19</code></td><td class="px-6 py-4">VC Mensal - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">21</code></td><td class="px-6 py-4">VC Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">22</code></td><td class="px-6 py-4">VE Mensal - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">24</code></td><td class="px-6 py-4">VE Diário - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">25</code></td><td class="px-6 py-4">VE Mensal - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">27</code></td><td class="px-6 py-4">VE Diário - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">28</code></td><td class="px-6 py-4">VE Mensal - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">30</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">59</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">61</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDAI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">63</code></td><td class="px-6 py-4">VC Diário Anônimo - 'Uso no Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDAI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAO</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAT</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VED4VAI</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">0</code></td><td class="px-6 py-4">VE Diário Anônimo - 'Uso no Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">8</code></td><td class="px-6 py-4">VE Lista</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">9</code></td><td class="px-6 py-4">VC Lista</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">31</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">32</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">33</code></td><td class="px-6 py-4">VT Diário - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">34</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">35</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">36</code></td><td class="px-6 py-4">VT Diário - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTMIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">37</code></td><td class="px-6 py-4">VT Mensal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTSIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">38</code></td><td class="px-6 py-4">VT Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VTDIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">39</code></td><td class="px-6 py-4">VT Diário - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">40</code></td><td class="px-6 py-4">VC Mensal Lista- 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">41</code></td><td class="px-6 py-4">VC Semanal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">42</code></td><td class="px-6 py-4"> VC Diário Lista- 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">43</code></td><td class="px-6 py-4">VC Mensal Lista- 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">44</code></td><td class="px-6 py-4">VC Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">45</code></td><td class="px-6 py-4">VC Diário Lista - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCMIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">46</code></td><td class="px-6 py-4">VC Mensal Lista- 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCSIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">47</code></td><td class="px-6 py-4">VC Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VCDIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">48</code></td><td class="px-6 py-4">VC Diário Lista- 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">49</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">50</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">51</code></td><td class="px-6 py-4">VE Diário - 'Uso No Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">52</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">53</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">54</code></td><td class="px-6 py-4">VE Diário - 'Uso No Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEMIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">55</code></td><td class="px-6 py-4">VE Mensal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VESIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">56</code></td><td class="px-6 py-4">VE Semanal - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">57</code></td><td class="px-6 py-4">VE Diário - 'Uso No Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">71</code></td><td class="px-6 py-4">VE Diário - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">73</code></td><td class="px-6 py-4">VE Diário - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDGIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">75</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">77</code></td><td class="px-6 py-4">VE Diário - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">79</code></td><td class="px-6 py-4">VE Diário - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VEDG4VIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">81</code></td><td class="px-6 py-4">VE Diário - 'Uso Integrado'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGOL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">83</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Ônibus'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGTL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">85</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Trilho'</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">VIGIL</code></td><td class="px-6 py-4 whitespace-nowrap"><code class="text-sm">87</code></td><td class="px-6 py-4">Vale Idoso Gratuito - 'Uso Integrado'</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3 class="text-xl font-semibold text-slate-900 mb-2">Grupos e Códigos Relacionados</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border border-slate-200 rounded-lg">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Grupo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Códigos</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200 text-sm">
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VC_CODES</code></td><td class="px-6 py-4">[5]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VE_CODES</code></td><td class="px-6 py-4">[4]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VT_CODES</code></td><td class="px-6 py-4">[3]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>FIDELITY_CODES</code></td><td class="px-6 py-4">[6, 11, 12]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>LIST_CODES</code></td><td class="px-6 py-4">[3, 8, 9, 10, 31, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 71, 73, 75, 77, 79, 81, 83, 85, 87]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>TEMPORARY_CODES</code></td><td class="px-6 py-4">[13, 15, 16, 18, 19, 21, 22, 24, 25, 27, 28, 30, 59, 61, 63]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCALL</code></td><td class="px-6 py-4">[5, 13, 15, 16, 18, 19, 21, 40, 41, 42, 43, 44, 45, 46, 47, 48]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VEALL</code></td><td class="px-6 py-4">[4, 22, 24, 25, 27, 28, 30, 49, 50, 51, 52, 53, 54, 55, 56, 57]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VTALL</code></td><td class="px-6 py-4">[3, 32, 33, 34, 35, 36, 37, 38, 39]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VC</code></td><td class="px-6 py-4">[5]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCL</code></td><td class="px-6 py-4">[9]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCM</code></td><td class="px-6 py-4">[13, 16, 19]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCD</code></td><td class="px-6 py-4">[15, 18, 21]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCML</code></td><td class="px-6 py-4">[40, 43, 46]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VCDL</code></td><td class="px-6 py-4">[42, 45, 48]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VE</code></td><td class="px-6 py-4">[4]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VEL</code></td><td class="px-6 py-4">[8]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VT</code></td><td class="px-6 py-4">[3]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VTD</code></td><td class="px-6 py-4">[33, 36, 39]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>VTM</code></td><td class="px-6 py-4">[31, 34, 37]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>RETIRED</code></td><td class="px-6 py-4">[83, 85, 87]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>FREE_PASS_STUDENT_LIST</code></td><td class="px-6 py-4">[71, 73, 75, 77, 79, 81]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>CREDIT_VC</code></td><td class="px-6 py-4">[691]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>CREDIT_STUDENT</code></td><td class="px-6 py-4">[687]</td></tr>
+                                <tr><td class="px-6 py-4 whitespace-nowrap"><code>CREDIT_VC_TEMPORAL</code></td><td class="px-6 py-4">[849, 852, 855, 847, 850, 853]</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <!-- Botão voltar ao topo -->
+    <button id="backToTop" class="back-to-top rounded-full bg-indigo-600 text-white px-4 py-2 shadow-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">Topo</button>
+
+    <script>
+        // Scroll Spy para destacar link ativo na barra lateral
+        const navLinks = Array.from(document.querySelectorAll('aside nav a'));
+        const sections = navLinks.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const id = '#' + entry.target.id;
+                const link = navLinks.find(a => a.getAttribute('href') === id);
+                if (!link) return;
+                if (entry.isIntersecting) {
+                    navLinks.forEach(a => a.classList.remove('nav-link-active', 'font-semibold'));
+                    link.classList.add('nav-link-active', 'font-semibold');
+                }
+            });
+        }, { rootMargin: '-40% 0px -50% 0px', threshold: 0.01 });
+
+        sections.forEach(section => observer.observe(section));
+
+        // Busca no sidebar
+        const searchInput = document.getElementById('sidebar-search');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const term = searchInput.value.trim().toLowerCase();
+                navLinks.forEach(link => {
+                    const li = link.closest('li');
+                    const text = link.textContent.toLowerCase();
+                    if (!term || text.includes(term)) {
+                        li.style.display = '';
+                    } else {
+                        li.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Expandir/Recolher todas as seções (mostra/oculta tabelas)
+        const expandBtn = document.getElementById('expandAll');
+        const collapseBtn = document.getElementById('collapseAll');
+        const tableWrappers = Array.from(document.querySelectorAll('section .overflow-x-auto'));
+
+        if (expandBtn) {
+            expandBtn.addEventListener('click', () => {
+                tableWrappers.forEach(w => w.classList.remove('hidden'));
+            });
+        }
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', () => {
+                tableWrappers.forEach(w => w.classList.add('hidden'));
+            });
+        }
+
+        // Botão voltar ao topo
+        const backToTop = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 600) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>

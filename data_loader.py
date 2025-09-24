@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import streamlit as st
+from connection import get_postgres_connection
 """
 ATENÇÃO: Este arquivo contém dados de exemplo (mocks).
 Substitua as funções aqui presentes pela sua lógica real de conexão 
@@ -93,12 +94,32 @@ def load_daily_sales_report():
     df['data'] = pd.to_datetime(df['data'])
     return df
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def load_entity_counts():
-    """Carrega contagem de entidades. Substitua pelo acesso a `mv_entity_counts`."""
-    return {
-        'total_pdv_units': 540,
-        'pos_terminal_count': 480,
-        'totem_terminal_count': 50,
-        'list_pos_terminal_count': 10
-    }
+    """
+    Carrega contagem de entidades a partir da view `mv_entity_counts` no Postgres.
+    Se a conexão falhar ou a variável de ambiente não estiver configurada, retorna dados mock.
+    """
+    # Consulta SQL
+    query = (
+        "SELECT total_pdv_units, pos_terminal_count, list_pos_terminal_count, totem_terminal_count "
+        "FROM entity_counts LIMIT 1;"
+    )
+
+    try:
+        conn = get_postgres_connection()
+        with conn:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                row = cur.fetchone()
+                if not row:
+                    raise RuntimeError("View mv_entity_counts não retornou linhas.")
+                total_pdv_units, pos_terminal_count, list_pos_terminal_count, totem_terminal_count = row
+                return {
+                    'total_pdv_units': int(total_pdv_units) if total_pdv_units is not None else 0,
+                    'pos_terminal_count': int(pos_terminal_count) if pos_terminal_count is not None else 0,
+                    'totem_terminal_count': int(totem_terminal_count) if totem_terminal_count is not None else 0,
+                    'list_pos_terminal_count': int(list_pos_terminal_count) if list_pos_terminal_count is not None else 0,
+                }
+    except Exception as exc:
+        raise RuntimeError(f"Falha ao consultar Postgres (EntityCounts): {exc}")
